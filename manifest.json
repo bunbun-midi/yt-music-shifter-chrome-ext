@@ -1,0 +1,33 @@
+{
+   "action": {
+      "default_icon": {
+         "16": "icon.png"
+      },
+      "default_popup": "popup.html"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ {
+      "js": [ "pitch.js", "content.js" ],
+      "matches": [ "*://music.youtube.com/*" ],
+      "run_at": "document_idle"
+   } ],
+   "description": "Change playback speed, pitch, and tape speed on YouTube Music",
+   "host_permissions": [ "*://music.youtube.com/*", "*://*.googlevideo.com/*" ],
+   "icons": {
+      "128": "icon.png",
+      "16": "icon.png",
+      "48": "icon.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA13zWfZGIF6iFvFPfrn37vQS/dnYyog2Dl0g0w9PZO6RXw7euYwqjzhjF5A96jYAiEmi59qUmSZn7ix5frn/a7nGORFmkGM8Tz4R3S6buhOyom22R0IwJ8X/6kPYVDgt45hoWyFcgcJPs3nqKCqPu9P0BWlKfHCLx2/0Z/+qo1Dqb/3LQwBDD4ZXLEjXXD8SN/cGaKvFNO+1JazUcmf9j7cqX+ZCZ9LXvi/mukPxdmkHZRmAjVb925g9e1YuUBto9/JGzKfT0hrw/HMAh7Wfp9r97i8UFz5gmkvhJlq3LAcq1701xg8E6nbJsm+w3t7l68TLkyYdTDGspkXlc0G7Z/QIDAQAB",
+   "manifest_version": 3,
+   "name": "YouTube Music Speed Changer",
+   "permissions": [ "storage", "webRequest" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "2.17",
+   "web_accessible_resources": [ {
+      "matches": [ "*://music.youtube.com/*" ],
+      "resources": [ "bookmark_empty.png", "bookmark_filled.png", "speed_icon.png", "background.png" ]
+   } ]
+}

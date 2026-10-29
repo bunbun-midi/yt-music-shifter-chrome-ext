@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Music Remote</title>
+  <style>
+    body {
+      font-family: 'YouTube Sans', 'Roboto', sans-serif;
+      padding: 15px;
+      width: 280px;
+      background-color: #121212; /* Varsayılan arka plan rengi, JS ile üzerine yazılabilir */
+      color: #ffffff; /* --ytmusic-text-primary */
+      display: flex; /* Flexbox kullanarak merkezi hizalama */
+      flex-direction: column;
+      align-items: center; /* Yatayda ortala */
+      text-align: center; /* Metinleri ortala */
+      position: relative; /* Ayarlar simgesi için relative konumlandırma */
+    }
+    
+    #backgroundLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* İçeriğin arkasında kalmasını sağlar */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
+
+    :root {
+      --ytmusic-player-bar-background: #282828;
+      --ytmusic-text-primary: #ffffff;
+      --ytmusic-text-secondary: #aaaaaa;
+      --ytmusic-accent-color: #ff0000; /* YouTube kırmızısı */
+    }
+
+    /* Ayarlar Simgesi */
+    #settingsIconContainer {
+      position: absolute;
+      top: -5px; /* Az daha yukarı */
+      right: -5px; /* Az daha sağa */
+      cursor: pointer;
+      z-index: 10; /* Diğer elementlerin üzerinde olmasını sağlar */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px; /* Genişletilmiş tıklama alanı */
+      height: 30px; /* Genişletilmiş tıklama alanı */
+      border-radius: 50%; /* Yuvarlak tıklama alanı */
+      transition: background-color 0.2s ease;
+    }
+
+    #settingsIconContainer:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #settingsIcon {
+      width: 20px;
+      height: 20px;
+      /* filter: invert(100%); KALDIRILDI */
+    }
+
+    #albumCover {
+      width: 250px;
+      height: 250px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #trackInfo {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    #trackTitle {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--ytmusic-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 250px; /* Kapağın genişliğiyle aynı */
+      display: block;
+      margin: 0 auto;
+      cursor: default;
+    }
+
+    #trackArtist, #albumName {
+      font-size: 14px;
+      color: var(--ytmusic-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 250px; /* Kapağın genişliğiyle aynı */
+      display: block;
+      margin: 0 auto;
+      cursor: default;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .control-button {
+      background: none;
+      border: none;
+      color: var(--ytmusic-text-primary);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .control-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .control-button svg {
+      fill: currentColor;
+      width: 24px;
+      height: 24px;
+      /* filter: invert(100%); KALDIRILDI */
+    }
+
+    #progressBarContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    #currentProgress, #totalDuration {
+      font-size: 12px;
+      color: var(--ytmusic-text-secondary);
+      width: 35px; /* Sürelerin sabit genişliği */
+      text-align: center;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    #durationProgress {
+      flex-grow: 1;
+      height: 4px;
+      background-color: #5a5a5a;
+      border-radius: 2px;
+      cursor: default;
+      position: relative;
+    }
+
+    #progressBarFill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--ytmusic-accent-color);
+      border-radius: 2px;
+    }
+
+    #speedControlContainer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      position: relative;
+      gap: 65px;
+    }
+
+    #speedIconWrapper {
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #speedIconWrapper:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #speedIcon {
+      width: 36px; /* 28px * 2 */
+      height: 36px; /* 28px * 2 */
+      /* filter: invert(100%); KALDIRILDI */
+    }
+
+    #bookmarkIconWrapper {
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+      display: flex; /* Flexbox kullanarak ikonları yan yana getir */
+      align-items: center;
+      justify-content: center;
+      position: relative; /* İçindeki img'lerin üst üste binmesi için */
+      width: 26px; /* Speed icon ile aynı boyut */
+      height: 26px; /* Speed icon ile aynı boyut */
+    }
+
+    #bookmarkIconWrapper:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #emptyBookmarkIcon, #filledBookmarkIcon {
+      position: absolute; /* Wrapper içinde üst üste bindirmek için */
+      top: 0;
+      left: 0;
+      width: 100%; /* Wrapper'ın boyutunu al */
+      height: 100%; /* Wrapper'ın boyutunu al */
+      object-fit: contain; /* Görüntüyü bozmadan sığdır */
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #filledBookmarkIcon {
+      opacity: 0; /* Başlangıçta gizli, JS ile kontrol edilecek */
+    }
+
+    #speedSliderPopup {
+      position: absolute;
+      bottom: 100%; /* Üstte açılacak */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      display: none; /* JS ile gösterilecek */
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 180px; /* Slider'ın genişliğine göre ayarlandı */
+      margin-bottom: 10px; /* speedControlContainer'dan biraz yukarıda durması için */
+      z-index: 100; /* Diğer her şeyin üzerinde olması için */
+      opacity: 0; /* Başlangıçta opaklık 0 olsun */
+      visibility: hidden; /* Başlangıçta gizli olsun */
+      transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    }
+
+    #speedSliderPopup label {
+      font-size: 14px;
+      color: var(--ytmusic-text-secondary);
+      margin-bottom: 5px;
+    }
+
+    #rateSlider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+       background: linear-gradient(to right, 
+              white 0%, 
+              white var(--slider-fill-percentage, 50%), /* Doldurulan kısım slider değerine göre değişecek */
+              #5A5A5A var(--slider-fill-percentage, 50%), /* Boş kısım başlangıcı */
+              #5A5A5A 100%); /* Boş kısım sonu */
+      border-radius: 5px;
+      outline: none;
+      transition: background 0.2s ease;
+    }
+
+    #rateSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      cursor: grab;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+    }
+
+    #rateSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      cursor: grab;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+    }
+
+    #rateValue {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--ytmusic-text-primary);
+      margin-top: 5px;
+    }
+
+    /* Yeni styles for now playing info */
+    #nowPlayingInfo {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    #nowPlayingTitle {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: var(--ytmusic-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 5px;
+    }
+
+    #nowPlayingArtist {
+      font-size: 0.9em;
+      color: var(--ytmusic-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="backgroundLayer"></div>
+
+  <div id="settingsIconContainer">
+    <img id="settingsIcon" src="settings_icon.png" alt="Settings Icon">
+  </div>
+
+  <img id="albumCover" src="default_cover.png">
+
+  <div id="trackInfo">
+    <span id="trackTitle">Song Title</span>
+    <span id="trackArtist">Artist</span>
+    <span id="albumName">Album</span>
+  </div>
+
+  <div id="controls">
+    <button id="previousButton" class="control-button">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 6l-8.5 6L18 18V6zM6 6h2v12H6V6z"/>
+      </svg>
+    </button>
+    <button id="playPauseButton" class="control-button">
+      <svg id="playIcon" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+    </button>
+    <button id="nextButton" class="control-button">
+      <svg viewBox="0 0 24 24">
+        <path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="progressBarContainer">
+    <span id="currentProgress">0:00</span>
+    <div id="durationProgress">
+      <div id="progressBarFill"></div>
+    </div>
+    <span id="totalDuration">0:00</span>
+  </div>
+
+  <div id="speedControlContainer">
+    <div id="speedIconWrapper">
+      <img id="speedIcon" src="speed_icon.png" alt="Speed Icon">
+    </div>
+    <div id="bookmarkIconWrapper">
+      <img id="emptyBookmarkIcon" src="bookmark_empty.png" alt="Empty Bookmark">
+      <img id="filledBookmarkIcon" src="bookmark_filled.png" alt="Filled Bookmark">
+    </div>
+    <div id="speedSliderPopup">
+      <input type="range" id="rateSlider" min="0.10" max="1.6" step="0.01" value="1">
+      <span id="rateValue">1.00x</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

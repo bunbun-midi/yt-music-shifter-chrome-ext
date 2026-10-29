@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Background Settings</title>
+  <style>
+    body {
+      font-family: 'YouTube Sans', 'Roboto', sans-serif;
+      padding: 20px;
+      max-width: 1200px; /* Maximize page width */
+      margin: 0 auto; /* Center the page */
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center horizontally */
+      min-height: 100vh; /* Cover full viewport height */
+    }
+    h1 {
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+    .setting-section {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      width: 100%; /* Fill container width */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #aaa;
+      font-size: 14px;
+    }
+    input[type="file"],
+    input[type="text"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background-color: #333;
+      color: #fff;
+    }
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+      border-radius: 50px;
+      background: #5a5a5a;
+      outline: none;
+      opacity: 0.7;
+      transition: opacity .2s;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e91e63;
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e91e63;
+      cursor: pointer;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    button {
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #c2185b;
+    }
+    #message {
+      color: #ff0000;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    /* Main content wrapper - manages expansion */
+    .main-content-wrapper {
+      display: flex;
+      justify-content: space-between;
+      width: 100%; /* Fill body's max-width */
+      gap: 60px;
+      flex-wrap: wrap; /* Allows wrapping on smaller screens */
+      align-items: flex-start; /* Align content to the top */
+    }
+
+    /* Left panel - Contains setting sections */
+    .settings-left-panel {
+      flex-grow: 1; /* Fill available space */
+      min-width: 350px; /* Minimum width */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Right panel - Contains preview and coffee link */
+    .settings-right-panel {
+      width: 250px; /* Fixed width, adjust as needed */
+      height: fit-content; /* Adjust height based on content */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center items (preview, link) horizontally */
+      padding: 20px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    #previewImage {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px dashed #5a5a5a;
+      display: none;
+    }
+
+    /* Styles for Buy Me a Coffee image link */
+    .buy-me-a-coffee-link {
+      margin-top: 20px; /* Add some space from the preview */
+      text-align: center;
+    }
+
+    .buy-me-a-coffee-link a {
+      display: inline-block; /* To make the image clickable area cover the image */
+      line-height: 0; /* Remove extra space */
+    }
+
+    .buy-me-a-coffee-link img {
+      width: 180px; /* Adjust image width as needed */
+      height: auto; /* Maintain aspect ratio */
+      transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transitions for hover effects */
+      border-radius: 5px; /* Slightly round image corners */
+    }
+
+    .buy-me-a-coffee-link img:hover {
+      transform: translateY(-3px); /* Slightly move up on hover */
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Shadow effect on hover */
+    }
+
+    /* Media query: for smaller screens */
+    @media (max-width: 768px) {
+      .main-content-wrapper {
+        flex-direction: column; /* Stack vertically */
+        align-items: center;
+      }
+      .settings-right-panel {
+        width: 100%; /* Full width */
+        margin-top: 20px; /* Space from the top section */
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Background Settings</h1>
+
+  <div class="main-content-wrapper">
+    <div class="settings-left-panel">
+      <div class="setting-section">
+        <label for="imageUpload">Upload from Local File (JPG/PNG):</label>
+        <input type="file" id="imageUpload" accept="image/jpeg, image/png">
+        <div class="button-group">
+          <button id="applyFileBtn">Apply</button>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label for="imageUrl">Image URL:</label>
+        <input type="text" id="imageUrl" placeholder="https://...">
+        <div class="button-group">
+          <button id="applyUrlBtn">Apply</button>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <button id="clearBackgroundBtn">Clear Background</button>
+      </div>
+
+      <div class="setting-section">
+        <label for="brightnessSlider">Brightness:</label>
+        <input type="range" id="brightnessSlider" min="0" max="200" value="100">
+        <span id="brightnessValue">100%</span>
+      </div>
+
+      <p id="message"></p>
+    </div>
+
+    <div class="settings-right-panel">
+      <img id="previewImage" src="" alt="Background Preview">
+
+      <div class="buy-me-a-coffee-link">
+        <a href="https://www.buymeacoffee.com/bunbunmidi" target="_blank" title="Buy Me A Coffee <3">
+          <img src="buy_me_a_coffee_button.png" alt="Buy Me A Coffee <3">
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
